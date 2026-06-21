@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nisarg Kudgunti | AI Engineer</title>
+<meta name="description" content="Nisarg Kudgunti. AI Engineer building multi-agent systems, RAG pipelines, and a Llama 3 style transformer trained from scratch for PII redaction.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+/* ============ TOKENS ============ */
+:root{
+  --paper: #ECE8DC;
+  --paper-dim: #DEDACB;
+  --ink: #16181B;
+  --ink-soft: #46494F;
+  --redact: #0A0A0A;
+  --accent: #8C3326;
+  --accent-soft: rgba(140,51,38,0.10);
+  --line: rgba(22,24,27,0.16);
+  --line-soft: rgba(22,24,27,0.09);
+  --paper-on-ink: #ECE8DC;
+  --ink-line: rgba(236,232,220,0.18);
+
+  --serif: "Source Serif 4", Georgia, serif;
+  --sans: "IBM Plex Sans", -apple-system, sans-serif;
+  --mono: "IBM Plex Mono", "SF Mono", monospace;
+
+  --s1: 0.5rem;
+  --s2: 1rem;
+  --s3: 1.5rem;
+  --s4: 2.5rem;
+  --s5: 4rem;
+  --s6: 6.5rem;
+  --s7: 10rem;
+
+  --maxw: 1180px;
+  --nav-h: 64px;
+}
+
+*{ box-sizing: border-box; }
+html{ scroll-behavior: smooth; }
+html, body{ margin:0; padding:0; }
+body{
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+  overflow-x: hidden;
+}
+section{ scroll-margin-top: var(--nav-h); }
+img, svg{ display:block; max-width:100%; }
+a{ color: inherit; text-decoration: none; }
+ul{ margin:0; padding:0; list-style:none; }
+h1,h2,h3,h4,p{ margin:0; }
+button{ font-family: inherit; cursor: pointer; border:none; background:none; color:inherit; }
+
+::selection{ background: var(--accent); color: var(--paper); }
+
+:focus-visible{
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* paper grain texture, fixed, cheap */
+.grain{
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.wrap{
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 var(--s4);
+}
+
+.eyebrow{
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.eyebrow .dot{ color: var(--accent); }
+
+/* ============ NAV ============ */
+.nav{
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  height: var(--nav-h);
+  display: flex;
+  align-items: center;
+  background: rgba(236,232,220,0.86);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.nav-inner{
+  width: 100%;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 var(--s4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.nav-mark{
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+.nav-mark .stamp{
+  color: var(--accent);
+}
+.nav-links{
+  display: flex;
+  gap: var(--s4);
+}
+.nav-links a{
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  padding: var(--s1) 0;
+  border-bottom: 1px solid transparent;
+  transition: color .2s ease, border-color .2s ease;
+}
+.nav-links a:hover, .nav-links a.is-active{
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+.nav-toggle{ display:none; }
+
+@media (max-width: 720px){
+  .nav-links{ display:none; }
+}
+
+/* ============ HERO ============ */
+.hero{
+  position: relative;
+  padding: var(--s6) var(--s4) var(--s5);
+  border-bottom: 1px solid var(--line);
+  overflow: hidden;
+}
+.hero canvas{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.55;
+}
+.hero-inner{
+  position: relative;
+  z-index: 2;
+  max-width: var(--maxw);
+  margin: 0 auto;
+}
+.case-tab{
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  border: 1px solid var(--line);
+  padding: var(--s1) var(--s2);
+  margin-bottom: var(--s3);
+}
+.case-tab .stamp-dot{
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  display:inline-block;
+  animation: pulseDot 2.4s ease-out infinite;
+}
+@keyframes pulseDot{
+  0%{ box-shadow: 0 0 0 0 rgba(140,51,38,0.55); }
+  70%{ box-shadow: 0 0 0 7px rgba(140,51,38,0); }
+  100%{ box-shadow: 0 0 0 0 rgba(140,51,38,0); }
+}
+.hero h1{
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: clamp(2.8rem, 7vw, 5.4rem);
+  letter-spacing: -0.01em;
+  line-height: 0.98;
+  margin-bottom: var(--s3);
+}
+.hero-role{
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
+  color: var(--ink-soft);
+  max-width: 46ch;
+  margin-bottom: var(--s4);
+}
+.hero-bio{
+  font-size: 1.05rem;
+  max-width: 62ch;
+  margin-bottom: var(--s2);
+}
+.redact-hint{
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: var(--s4);
+}
+.redact-hint::before{ content: "→ "; color: var(--accent); }
+
+.field-strip{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--s3);
+  margin-top: var(--s5);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--line);
+}
+.field{
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.field-label{
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.field-value{
+  font-family: var(--mono);
+  font-size: 0.92rem;
+}
+@media (max-width: 880px){
+  .field-strip{ grid-template-columns: repeat(2, 1fr); }
+}
+
+.hero-cta{
+  display: flex;
+  gap: var(--s3);
+  margin-top: var(--s4);
+  flex-wrap: wrap;
+}
+.btn{
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.85rem 1.4rem;
+  border: 1px solid var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background .2s ease, color .2s ease, transform .15s ease;
+}
+.btn:hover{ transform: translateY(-2px); }
+.btn-solid{
+  background: var(--ink);
+  color: var(--paper);
+}
+.btn-solid:hover{ background: var(--accent); border-color: var(--accent); }
+.btn-outline:hover{ background: var(--ink); color: var(--paper); }
+
+/* ============ REDACTION SPAN ============ */
+.redact{
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+.redact .rtext{ position: relative; z-index: 1; }
+.redact .rbar{
+  position: absolute;
+  inset: 0;
+  background: var(--redact);
+  transform-origin: left;
+  transition: transform 0.55s cubic-bezier(.65,0,.35,1);
+  z-index: 2;
+}
+.redact:hover .rbar,
+.redact.is-open .rbar{
+  transform: scaleX(0);
+}
+@media (hover: none){
+  .redact .rbar{ transform-origin: left; }
+}
+
+/* ============ SECTION SHELL ============ */
+.section{
+  padding: var(--s6) var(--s4);
+  border-bottom: 1px solid var(--line);
+}
+.section-head{
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--s3);
+  margin-bottom: var(--s5);
+  flex-wrap: wrap;
+}
+.section-title{
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(1.8rem, 3.2vw, 2.6rem);
+}
+.reveal{
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.3,1);
+}
+.reveal.is-visible{
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* title wipe: a redaction bar that retracts on scroll-in, used on section titles only */
+.title-redact{
+  position: relative;
+  display: inline-block;
+}
+.title-redact .txt{ position: relative; z-index: 1; }
+.title-redact .bar{
+  position: absolute;
+  inset: -2px -4px;
+  background: var(--redact);
+  transform-origin: left;
+  transform: scaleX(1);
+  transition: transform .65s cubic-bezier(.65,0,.35,1);
+  transition-delay: .15s;
+  z-index: 2;
+}
+.reveal.is-visible .title-redact .bar{ transform: scaleX(0); }
+
+/* spotlight hover used on cards throughout the page */
+.spotlight{ position: relative; overflow: hidden; }
+.spotlight::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(220px circle at var(--mx, 50%) var(--my, 50%), var(--accent-soft), transparent 70%);
+  opacity: 0;
+  transition: opacity .3s ease;
+  pointer-events: none;
+}
+.spotlight:hover::before{ opacity: 1; }
+.case-file .spotlight::before{
+  background: radial-gradient(220px circle at var(--mx, 50%) var(--my, 50%), rgba(140,51,38,0.18), transparent 70%);
+}
+
+/* stamp-in flourish for docket file numbers, chained to the parent reveal */
+.docket-file{
+  display: inline-block;
+  opacity: 0;
+  transform: scale(1.7) rotate(-9deg);
+}
+.reveal.is-visible .docket-file{
+  animation: stampIn .5s cubic-bezier(.2,.8,.2,1) forwards;
+  animation-delay: .25s;
+}
+@keyframes stampIn{
+  0%{ opacity: 0; transform: scale(1.7) rotate(-9deg); }
+  60%{ opacity: 1; transform: scale(0.94) rotate(2deg); }
+  100%{ opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+/* ============ ABOUT ============ */
+.about-grid{
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: var(--s6);
+}
+.about-text p{
+  font-size: 1.08rem;
+  max-width: 62ch;
+  margin-bottom: var(--s3);
+}
+.about-text p:last-child{ margin-bottom: 0; }
+.about-side{
+  border-left: 1px solid var(--line);
+  padding-left: var(--s4);
+}
+.dl-row{
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s2);
+  padding: var(--s2) 0;
+  border-bottom: 1px solid var(--line-soft);
+  font-family: var(--mono);
+  font-size: 0.85rem;
+}
+.dl-row:last-child{ border-bottom: none; }
+.dl-k{ color: var(--ink-soft); }
+.dl-v{ text-align: right; }
+
+@media (max-width: 880px){
+  .about-grid{ grid-template-columns: 1fr; gap: var(--s4); }
+  .about-side{ border-left: none; padding-left: 0; border-top: 1px solid var(--line); padding-top: var(--s4); }
+}
+
+/* ============ CASE FILE (FEATURED PROJECT) ============ */
+.case-file{
+  background: var(--ink);
+  color: var(--paper-on-ink);
+}
+.case-file .eyebrow{ color: rgba(236,232,220,0.6); }
+.case-file .section-title{ color: var(--paper-on-ink); }
+.case-file .section-head{ border-color: var(--ink-line); }
+
+.case-file-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s6);
+  align-items: start;
+}
+.case-name{
+  font-family: var(--serif);
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  font-weight: 600;
+  line-height: 1.15;
+  margin-bottom: var(--s3);
+}
+.case-name .hl{ color: var(--accent); }
+.case-desc{
+  font-size: 1.02rem;
+  color: rgba(236,232,220,0.85);
+  max-width: 56ch;
+  margin-bottom: var(--s4);
+}
+.spec-sheet{
+  border-top: 1px solid var(--ink-line);
+}
+.spec-row{
+  display: grid;
+  grid-template-columns: 13rem 1fr;
+  gap: var(--s3);
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--ink-line);
+  font-size: 0.92rem;
+}
+.spec-k{
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(236,232,220,0.55);
+  padding-top: 0.1rem;
+}
+.spec-v a{
+  color: var(--paper-on-ink);
+  border-bottom: 1px solid rgba(236,232,220,0.35);
+  transition: border-color .2s ease, color .2s ease;
+}
+.spec-v a:hover{ border-color: var(--accent); color: var(--accent); }
+@media (max-width: 720px){
+  .spec-row{ grid-template-columns: 1fr; gap: 0.3rem; }
+  .case-file-grid{ grid-template-columns: 1fr; gap: var(--s4); }
+}
+
+/* demo widget */
+.demo-box{
+  margin-top: var(--s5);
+  border: 1px solid var(--ink-line);
+  padding: var(--s4);
+}
+.demo-label{
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(236,232,220,0.55);
+  margin-bottom: var(--s2);
+}
+.demo-input{
+  width: 100%;
+  background: rgba(236,232,220,0.05);
+  border: 1px solid var(--ink-line);
+  color: var(--paper-on-ink);
+  font-family: var(--mono);
+  font-size: 0.92rem;
+  padding: var(--s2);
+  resize: vertical;
+  min-height: 88px;
+}
+.demo-input:focus{ outline: 1px solid var(--accent); border-color: var(--accent); }
+.demo-row{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--s2);
+  gap: var(--s2);
+  flex-wrap: wrap;
+}
+.demo-note{
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: rgba(236,232,220,0.5);
+}
+.demo-note a{ color: var(--accent); border-bottom: 1px solid var(--accent); }
+.demo-output{
+  margin-top: var(--s3);
+  padding: var(--s3);
+  background: rgba(236,232,220,0.04);
+  border: 1px solid var(--ink-line);
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  min-height: 40px;
+  white-space: pre-wrap;
+}
+.pii-mark{
+  background: var(--redact);
+  color: var(--redact);
+  padding: 0 0.15em;
+  border-radius: 1px;
+  cursor: pointer;
+}
+.pii-mark.open{ background: transparent; color: var(--accent); }
+
+/* ============ DOCKET / EXPERIENCE ============ */
+.docket-item{
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  gap: var(--s4);
+  padding: var(--s4) 0;
+  border-top: 1px solid var(--line);
+}
+.docket-item:first-of-type{ border-top: 1px solid var(--line); }
+.docket-file{
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+.docket-dates{
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  margin-top: 0.3rem;
+}
+.docket-role{
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.3rem;
+  margin-bottom: 0.2rem;
+}
+.docket-org{
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  margin-bottom: var(--s2);
+}
+.docket-list{
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.docket-list li{
+  font-size: 0.98rem;
+  padding-left: 1.1rem;
+  position: relative;
+}
+.docket-list li::before{
+  content: "\203A";
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+}
+@media (max-width: 720px){
+  .docket-item{ grid-template-columns: 1fr; gap: var(--s2); }
+}
+
+/* ============ SKILLS / INDEX ============ */
+.index-grid{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--s4);
+}
+.index-card{
+  border: 1px solid var(--line);
+  padding: var(--s3);
+}
+.index-card-title{
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: var(--s3);
+  padding-bottom: var(--s2);
+  border-bottom: 1px solid var(--line);
+}
+.tag-list{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.tag{
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  border: 1px solid var(--line);
+  padding: 0.3rem 0.6rem;
+  color: var(--ink-soft);
+  transition: transform .15s ease, background .2s ease, color .2s ease, border-color .2s ease;
+}
+.tag:hover{
+  transform: scale(0.95);
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+@media (max-width: 980px){
+  .index-grid{ grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px){
+  .index-grid{ grid-template-columns: 1fr; }
+}
+
+/* ============ RECORDS / ACHIEVEMENTS ============ */
+.records-grid{
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--s3);
+}
+.record-card{
+  border: 1px solid var(--line);
+  padding: var(--s4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+.record-tag{
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.record-title{
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 1.18rem;
+}
+.record-body{
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+}
+@media (max-width: 720px){
+  .records-grid{ grid-template-columns: 1fr; }
+}
+
+/* ============ CONTACT ============ */
+.contact{
+  border-bottom: none;
+}
+.contact-grid{
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: var(--s6);
+  align-items: start;
+}
+.contact-lead{
+  font-family: var(--serif);
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  font-weight: 600;
+  max-width: 22ch;
+  line-height: 1.2;
+}
+.contact-list{
+  border-top: 1px solid var(--line);
+}
+.contact-row{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--s3) 0;
+  border-bottom: 1px solid var(--line);
+  gap: var(--s2);
+}
+.contact-k{
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.contact-v{
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-bottom: 1px solid transparent;
+  transition: border-color .2s ease, color .2s ease;
+}
+.contact-row a.contact-v:hover{
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+@media (max-width: 880px){
+  .contact-grid{ grid-template-columns: 1fr; gap: var(--s4); }
+}
+
+footer{
+  padding: var(--s4);
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+}
+
+@media (prefers-reduced-motion: reduce){
+  html{ scroll-behavior: auto; }
+  .reveal{ opacity: 1; transform: none; transition: none; }
+  .redact .rbar{ transition: transform .15s linear; }
+  .btn:hover{ transform: none; }
+  .title-redact .bar{ transition: none; transform: scaleX(0); }
+  .docket-file{ opacity: 1; transform: none; animation: none; }
+  .case-tab .stamp-dot{ animation: none; }
+  .tag:hover{ transform: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="grain" aria-hidden="true"></div>
+
+<header class="nav">
+  <div class="nav-inner">
+    <div class="nav-mark">N. KUDGUNTI <span class="stamp">// AI ENGINEER</span></div>
+    <nav class="nav-links" id="navLinks">
+      <a href="#about">About</a>
+      <a href="#project">Case File</a>
+      <a href="#experience">Record</a>
+      <a href="#skills">Index</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero" id="hero">
+    <canvas id="heroCanvas" aria-hidden="true"></canvas>
+    <div class="hero-inner">
+      <div class="case-tab"><span class="stamp-dot"></span> PERSONNEL FILE NO. 0150M</div>
+      <h1>Nisarg<br>Kudgunti</h1>
+      <p class="hero-role">AI Engineer who ships multi-agent systems for Fortune 500 clients by day, and built a transformer from raw matrix multiplications by night.</p>
+      <p class="hero-bio">
+        Currently architecting AI vulnerability remediation and RAG systems as an Associate AI Engineer at Techolution in Hyderabad. Before that, an AI Intern at the same company, and a Data Science Intern at AlgoAnalytics. Two years spent in production GenAI. One side project spent rebuilding Llama 3's architecture from scratch, just to know exactly what happens inside it.
+      </p>
+
+      <div class="hero-cta">
+        <a href="#project" class="btn btn-solid">View the case file</a>
+        <a href="resume.pdf" class="btn btn-outline" download>Download resume</a>
+      </div>
+
+      <div class="field-strip">
+        <div class="field">
+          <span class="field-label">Base</span>
+          <span class="field-value">Hyderabad, India</span>
+        </div>
+        <div class="field">
+          <span class="field-label">Role</span>
+          <span class="field-value">Associate AI Engineer</span>
+        </div>
+        <div class="field">
+          <span class="field-label">Experience</span>
+          <span class="field-value">~2 yrs production GenAI</span>
+        </div>
+        <div class="field">
+          <span class="field-label">Status</span>
+          <span class="field-value">Open: Pune / BLR / HYD / Remote</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ABOUT ============ -->
+  <section class="section" id="about">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div>
+          <p class="eyebrow"><span class="dot">·</span> 01 / SUBJECT</p>
+          <h2 class="section-title"><span class="title-redact"><span class="bar"></span><span class="txt">About</span></span></h2>
+        </div>
+      </div>
+      <div class="about-grid">
+        <div class="about-text reveal">
+          <p>Nisarg builds the infrastructure layer of generative AI: multi-agent orchestration, retrieval pipelines, and the evaluation loops that keep them honest in production. At Techolution, his work spans vulnerability remediation agents, hybrid RAG systems over thousands of enterprise forms, and natural-language-to-SQL pipelines that turned multi-day reporting into a sub-minute process.</p>
+          <p>Most of that work means directing large pretrained models. To understand what is actually happening underneath them, he implemented the Llama 3 architecture from first principles in PyTorch: rotary position embeddings, RMSNorm, SwiGLU, the full decoder stack, then pretrained and fine-tuned it himself. That project sits at the center of this page.</p>
+          <p>He holds a BE in Computer Engineering with Honors in AI/ML from PVGCOET, Pune, and is Microsoft Certified in Azure AI Fundamentals.</p>
+        </div>
+        <div class="about-side reveal">
+          <div class="dl-row"><span class="dl-k">Education</span><span class="dl-v">BE, Computer Engineering<br>Hons. AI/ML, PVGCOET</span></div>
+          <div class="dl-row"><span class="dl-k">CGPA</span><span class="dl-v">8.82</span></div>
+          <div class="dl-row"><span class="dl-k">Graduated</span><span class="dl-v">May 2024</span></div>
+          <div class="dl-row"><span class="dl-k">Certification</span><span class="dl-v">Azure AI Fundamentals (AI-900)</span></div>
+          <div class="dl-row"><span class="dl-k">Core stack</span><span class="dl-v">LangChain, LangGraph,<br>PyTorch, FastAPI</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CASE FILE: FEATURED PROJECT ============ -->
+  <section class="section case-file" id="project">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div>
+          <p class="eyebrow"><span class="dot">·</span> 02 / EXHIBIT A</p>
+          <h2 class="section-title"><span class="title-redact"><span class="bar"></span><span class="txt">Case file</span></span></h2>
+        </div>
+      </div>
+      <div class="case-file-grid">
+        <div class="reveal">
+          <h3 class="case-name">Llama3-150M-<span class="hl">PII-Redactor</span></h3>
+          <p class="case-desc">A 150M-parameter, Llama 3 style decoder-only transformer, written from scratch in PyTorch rather than fine-tuned through someone else's framework. Pretrained on WikiText-103, then fine-tuned to detect and redact personally identifiable information, so the model that hides the data is the same model that was built to understand it.</p>
+          <p class="case-desc">The repository keeps pretraining and fine-tuning as clearly separated stages, so the architecture work and the task-specific adaptation can each be read on their own.</p>
+
+          <div class="demo-box">
+            <p class="demo-label">Live demo · pattern based, runs in your browser</p>
+            <textarea class="demo-input" id="demoInput" spellcheck="false">Hi, this is Rahul Mehta. You can reach me at rahul.mehta@example.com or +91 98765 43210 regarding the invoice.</textarea>
+            <div class="demo-row">
+              <button class="btn btn-outline" id="demoBtn" style="border-color:var(--ink-line); color:var(--paper-on-ink);">Run redaction</button>
+              <span class="demo-note">This is a lightweight rule-based stand-in. The trained model does this with learned attention, not regex. <a href="#" id="hfLink" target="_blank" rel="noopener">Try the real one on Hugging Face →</a></span>
+            </div>
+            <div class="demo-output" id="demoOutput" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <div class="reveal">
+          <div class="spec-sheet">
+            <div class="spec-row"><span class="spec-k">Architecture</span><span class="spec-v">Decoder-only transformer, Llama 3 design: RoPE, RMSNorm, SwiGLU feedforward</span></div>
+            <div class="spec-row"><span class="spec-k">Parameters</span><span class="spec-v">~150M</span></div>
+            <div class="spec-row"><span class="spec-k">Framework</span><span class="spec-v">PyTorch, written from scratch</span></div>
+            <div class="spec-row"><span class="spec-k">Pretraining corpus</span><span class="spec-v">WikiText-103</span></div>
+            <div class="spec-row"><span class="spec-k">Fine-tune task</span><span class="spec-v">PII detection and redaction</span></div>
+            <div class="spec-row"><span class="spec-k">Fine-tune dataset</span><span class="spec-v">ai4privacy / pii-masking-200k</span></div>
+            <div class="spec-row"><span class="spec-k">Demo</span><span class="spec-v"><a href="#" id="hfLink2" target="_blank" rel="noopener">Hugging Face Space, PII-Redactor-Demo →</a></span></div>
+            <div class="spec-row"><span class="spec-k">Source</span><span class="spec-v"><a href="#" id="ghLink" target="_blank" rel="noopener">GitHub, Llama-Architecture-From-Scratch →</a></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ EXPERIENCE / DOCKET ============ -->
+  <section class="section" id="experience">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div>
+          <p class="eyebrow"><span class="dot">·</span> 03 / RECORD</p>
+          <h2 class="section-title"><span class="title-redact"><span class="bar"></span><span class="txt">Work on file</span></span></h2>
+        </div>
+      </div>
+
+      <div class="docket-item reveal spotlight">
+        <div>
+          <div class="docket-file">FILE 03</div>
+          <div class="docket-dates">Feb 2025 to Present</div>
+        </div>
+        <div>
+          <div class="docket-role">Associate AI Engineer</div>
+          <div class="docket-org">Techolution · Hyderabad, India · Hybrid</div>
+          <ul class="docket-list">
+            <li>Architected a multi-agent vulnerability remediation system for a Fortune 500 media client, integrating Checkmarx PR and push webhooks to detect and fix SAST, SCS, and IaC issues across 50 repositories, with threshold-gated parallelism per vulnerability type.</li>
+            <li>Built a repo-scoped feedback loop on an AlloyDB vector store, embedding accepted, regenerated, and PR-comment feedback with language and type metadata, retrieving the top 5 fixes by cosine similarity to keep outputs aligned to each codebase.</li>
+            <li>Built a hybrid RAG conversational agent over 4,000+ cost estimation forms for an enterprise retail client, using whole-form chunking and LLM-based entity extraction to pre-filter retrieval by known form fields.</li>
+            <li>Designed a key-aware citation system that highlights the exact field and value a generated answer was sourced from, directly inside the original form.</li>
+            <li>Reduced construction schedule reporting from 2 to 3 days down to under a minute with an NL-to-SQL agent over 8,000+ forms, consolidating 80+ tables into 20 UI-mirrored tables to cut hallucination, and a multi-tool pipeline of table selector, SQL writer, validator, and executor.</li>
+            <li>Currently building a multi-agent platform that compresses client project delivery from 3 to 4 weeks down to 3 to 4 days through automated categorization and gap resolution.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="docket-item reveal spotlight">
+        <div>
+          <div class="docket-file">FILE 02</div>
+          <div class="docket-dates">Jul 2024 to Jan 2025</div>
+        </div>
+        <div>
+          <div class="docket-role">AI Intern</div>
+          <div class="docket-org">Techolution · Onsite</div>
+          <ul class="docket-list">
+            <li>Engineered RAG Fusion and HDBSCAN/SOM-based clustering to improve retrieval quality across applications.</li>
+            <li>Cut VertexAI inference cost by more than 50% by replacing Claude 3.5 Sonnet with Qwen-2.5-Coder served on Cloud Run via vLLM.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="docket-item reveal spotlight">
+        <div>
+          <div class="docket-file">FILE 01</div>
+          <div class="docket-dates">Feb 2024 to Jun 2024</div>
+        </div>
+        <div>
+          <div class="docket-role">Data Science Intern</div>
+          <div class="docket-org">AlgoAnalytics · Remote</div>
+          <ul class="docket-list">
+            <li>Improved a RAG application's RAGAS metrics using LangChain, FAISS, LLM-based reranking, and custom chunking strategies.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SKILLS / INDEX ============ -->
+  <section class="section" id="skills">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div>
+          <p class="eyebrow"><span class="dot">·</span> 04 / INDEX</p>
+          <h2 class="section-title"><span class="title-redact"><span class="bar"></span><span class="txt">Working stack</span></span></h2>
+        </div>
+      </div>
+      <div class="index-grid">
+        <div class="index-card reveal spotlight">
+          <div class="index-card-title">Frameworks</div>
+          <div class="tag-list">
+            <span class="tag">LangChain</span><span class="tag">LangGraph</span><span class="tag">LlamaIndex</span>
+            <span class="tag">PyTorch</span><span class="tag">FastAPI</span><span class="tag">Flask</span>
+          </div>
+        </div>
+        <div class="index-card reveal spotlight">
+          <div class="index-card-title">AI systems</div>
+          <div class="tag-list">
+            <span class="tag">Multi-Agent Systems</span><span class="tag">RAG</span><span class="tag">LLM Fine-tuning</span>
+            <span class="tag">Prompt Engineering</span><span class="tag">MCP</span>
+          </div>
+        </div>
+        <div class="index-card reveal spotlight">
+          <div class="index-card-title">Infrastructure</div>
+          <div class="tag-list">
+            <span class="tag">GCP</span><span class="tag">Azure</span><span class="tag">AWS</span>
+            <span class="tag">Docker</span><span class="tag">Kubernetes</span><span class="tag">vLLM</span><span class="tag">Ollama</span>
+          </div>
+        </div>
+        <div class="index-card reveal spotlight">
+          <div class="index-card-title">Data</div>
+          <div class="tag-list">
+            <span class="tag">Python</span><span class="tag">SQL</span><span class="tag">MongoDB</span><span class="tag">Redis</span>
+            <span class="tag">FAISS</span><span class="tag">ChromaDB</span><span class="tag">Pinecone</span><span class="tag">AlloyDB</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RECORDS / ACHIEVEMENTS ============ -->
+  <section class="section" id="records">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div>
+          <p class="eyebrow"><span class="dot">·</span> 05 / ADDITIONAL RECORDS</p>
+          <h2 class="section-title"><span class="title-redact"><span class="bar"></span><span class="txt">Also on file</span></span></h2>
+        </div>
+      </div>
+      <div class="records-grid">
+        <div class="record-card reveal spotlight">
+          <span class="record-tag">Leadership</span>
+          <span class="record-title">TEDxPVGCOET</span>
+          <span class="record-body">Licensee and organizer of a 60-member team that hosted 8 distinguished speakers under the theme Punarutthan, the revival of ancient art forms and ideas.</span>
+        </div>
+        <div class="record-card reveal spotlight">
+          <span class="record-tag">Competition</span>
+          <span class="record-title">PICT Impetus & Concepts 2024</span>
+          <span class="record-body">Third place in the Open Software Domain of the project competition.</span>
+        </div>
+        <div class="record-card reveal spotlight">
+          <span class="record-tag">Certification</span>
+          <span class="record-title">Microsoft Certified: Azure AI Fundamentals</span>
+          <span class="record-body">AI-900, all requirements passed.</span>
+        </div>
+        <div class="record-card reveal spotlight">
+          <span class="record-tag">Published work</span>
+          <span class="record-title">The Anthem Of My Heart</span>
+          <span class="record-body">A poetry collection published in April 2022, his first book.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CONTACT ============ -->
+  <section class="section contact" id="contact">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div>
+          <p class="eyebrow"><span class="dot">·</span> 06 / REQUEST ACCESS</p>
+          <h2 class="section-title"><span class="title-redact"><span class="bar"></span><span class="txt">Get in touch</span></span></h2>
+        </div>
+      </div>
+      <div class="contact-grid">
+        <p class="contact-lead reveal">Open to AI Engineer, ML Engineer, GenAI Engineer, and Applied Scientist roles, in Pune, Bengaluru, Hyderabad, or remote.</p>
+        <div class="contact-list reveal">
+          <div class="contact-row">
+            <span class="contact-k">Email</span>
+            <a class="contact-v" href="mailto:nisarg6502@gmail.com">nisarg6502@gmail.com →</a>
+          </div>
+          <div class="contact-row">
+            <span class="contact-k">Phone</span>
+            <a class="contact-v" href="tel:+917020631336">+91 70206 31336 →</a>
+          </div>
+          <div class="contact-row">
+            <span class="contact-k">LinkedIn</span>
+            <a class="contact-v" id="liLink" href="#" target="_blank" rel="noopener">linkedin.com/in/nisarg-kudgunti-948024206 →</a>
+          </div>
+          <div class="contact-row">
+            <span class="contact-k">GitHub</span>
+            <a class="contact-v" id="ghLink2" href="#" target="_blank" rel="noopener">github.com/Nisarg6502 →</a>
+          </div>
+          <div class="contact-row">
+            <span class="contact-k">Kaggle</span>
+            <a class="contact-v" id="kgLink" href="#" target="_blank" rel="noopener">kaggle.com/nisargkudgunti →</a>
+          </div>
+          <div class="contact-row">
+            <span class="contact-k">Resume</span>
+            <a class="contact-v" href="resume.pdf" download>Download PDF →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>FILED FROM HYDERABAD, INDIA · © 2026 NISARG KUDGUNTI</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- EDIT THESE PLACEHOLDER LINKS ---------- */
+  var LINKS = {
+    linkedin: "https://www.linkedin.com/in/nisarg-kudgunti-948024206/",
+    github: "https://github.com/Nisarg6502",
+    kaggle: "https://kaggle.com/nisargkudgunti",
+    githubRepo: "https://github.com/Nisarg6502/Llama-Architecture-From-Scratch",
+    huggingface: "https://huggingface.co/spaces/nisarg6502/PII-Redactor-Demo"
+  };
+  ["liLink"].forEach(function(id){ var el=document.getElementById(id); if(el) el.href=LINKS.linkedin; });
+  ["ghLink2"].forEach(function(id){ var el=document.getElementById(id); if(el) el.href=LINKS.github; });
+  ["kgLink"].forEach(function(id){ var el=document.getElementById(id); if(el) el.href=LINKS.kaggle; });
+  ["ghLink"].forEach(function(id){ var el=document.getElementById(id); if(el) el.href=LINKS.githubRepo; });
+  ["hfLink","hfLink2"].forEach(function(id){ var el=document.getElementById(id); if(el) el.href=LINKS.huggingface; });
+
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------- redaction tap-toggle (for touch devices, hover already works via CSS) ---------- */
+  document.querySelectorAll(".redact").forEach(function(el){
+    el.addEventListener("click", function(){
+      el.classList.toggle("is-open");
+    });
+  });
+
+  /* ---------- spotlight hover (cards + timeline rows) ---------- */
+  document.querySelectorAll(".spotlight").forEach(function(el){
+    el.addEventListener("mousemove", function(e){
+      var r = el.getBoundingClientRect();
+      el.style.setProperty("--mx", ((e.clientX - r.left) / r.width * 100) + "%");
+      el.style.setProperty("--my", ((e.clientY - r.top) / r.height * 100) + "%");
+    });
+  });
+
+  /* ---------- scroll reveal ---------- */
+  var revealEls = document.querySelectorAll(".reveal");
+  if("IntersectionObserver" in window && !reduceMotion){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry, i){
+        if(entry.isIntersecting){
+          setTimeout(function(){ entry.target.classList.add("is-visible"); }, i * 40);
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    revealEls.forEach(function(el){ io.observe(el); });
+  } else {
+    revealEls.forEach(function(el){ el.classList.add("is-visible"); });
+  }
+
+  /* ---------- active nav link on scroll ---------- */
+  var navLinks = document.querySelectorAll(".nav-links a");
+  var sections = Array.prototype.map.call(navLinks, function(a){
+    return document.querySelector(a.getAttribute("href"));
+  });
+  function syncNav(){
+    var y = window.scrollY + window.innerHeight * 0.3;
+    var activeIdx = 0;
+    sections.forEach(function(sec, i){
+      if(sec && sec.offsetTop <= y) activeIdx = i;
+    });
+    navLinks.forEach(function(a, i){ a.classList.toggle("is-active", i === activeIdx); });
+  }
+  window.addEventListener("scroll", syncNav, { passive: true });
+  syncNav();
+
+  /* ---------- PII demo (rule based, runs locally) ---------- */
+  var demoBtn = document.getElementById("demoBtn");
+  var demoInput = document.getElementById("demoInput");
+  var demoOutput = document.getElementById("demoOutput");
+
+  function runRedaction(text){
+    var patterns = [
+      { re: /[\w.+-]+@[\w-]+\.[a-zA-Z]{2,}/g },
+      { re: /(\+?\d[\d\-\s]{7,}\d)/g },
+      { re: /\b[A-Z][a-z]+\s[A-Z][a-z]+\b/g }
+    ];
+    var marks = [];
+    patterns.forEach(function(p){
+      var m;
+      while((m = p.re.exec(text)) !== null){
+        marks.push({ start: m.index, end: m.index + m[0].length, val: m[0] });
+      }
+    });
+    marks.sort(function(a,b){ return a.start - b.start; });
+    var merged = [];
+    marks.forEach(function(m){
+      var last = merged[merged.length - 1];
+      if(last && m.start <= last.end){ last.end = Math.max(last.end, m.end); }
+      else { merged.push({ start: m.start, end: m.end }); }
+    });
+
+    var out = document.createDocumentFragment();
+    var cursor = 0;
+    merged.forEach(function(m){
+      if(m.start > cursor) out.appendChild(document.createTextNode(text.slice(cursor, m.start)));
+      var span = document.createElement("span");
+      span.className = "pii-mark";
+      span.textContent = text.slice(m.start, m.end);
+      span.title = "Click to declassify";
+      span.addEventListener("click", function(){ span.classList.toggle("open"); });
+      out.appendChild(span);
+      cursor = m.end;
+    });
+    if(cursor < text.length) out.appendChild(document.createTextNode(text.slice(cursor)));
+    if(merged.length === 0) out.appendChild(document.createTextNode(text));
+    return out;
+  }
+
+  if(demoBtn){
+    demoBtn.addEventListener("click", function(){
+      demoOutput.innerHTML = "";
+      demoOutput.appendChild(runRedaction(demoInput.value || ""));
+    });
+    demoOutput.appendChild(runRedaction(demoInput.value || ""));
+  }
+
+  /* ---------- hero canvas: token flow + redaction sweep ---------- */
+  var canvas = document.getElementById("heroCanvas");
+  if(canvas && !reduceMotion){
+    var ctx = canvas.getContext("2d");
+    var hero = document.getElementById("hero");
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var W, H;
+    var tokens = ["RoPE","RMSNorm","SwiGLU","attn","logits","[MASK]","Q·K","softmax","<PII>","token","embed","0x4F2C","ffn","head_7","norm","decode"];
+
+    function resize(){
+      W = hero.clientWidth;
+      H = hero.clientHeight;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      canvas.style.width = W + "px";
+      canvas.style.height = H + "px";
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    var particles = [];
+    var COUNT = Math.max(18, Math.min(34, Math.floor(W / 60)));
+    for(var i=0;i<COUNT;i++){
+      particles.push({
+        x: Math.random()*W,
+        y: Math.random()*H,
+        vx: 0.12 + Math.random()*0.22,
+        text: tokens[Math.floor(Math.random()*tokens.length)],
+        size: 11 + Math.random()*4,
+        alpha: 0.08 + Math.random()*0.16,
+        redacted: false,
+        flipAt: 200 + Math.random()*600
+      });
+    }
+
+    var sweep = { x: -200, active: true, speed: 1.4 };
+
+    function tick(){
+      ctx.clearRect(0,0,W,H);
+      ctx.font = "12px " + getComputedStyle(document.body).fontFamily;
+
+      particles.forEach(function(p){
+        p.x += p.vx;
+        if(p.x > W + 60){ p.x = -60; p.y = Math.random()*H; p.text = tokens[Math.floor(Math.random()*tokens.length)]; p.redacted = false; }
+
+        var nearSweep = Math.abs(p.x - sweep.x) < 14;
+        if(nearSweep) p.redacted = true;
+
+        ctx.font = p.size + "px IBM Plex Mono, monospace";
+        if(p.redacted){
+          var w = ctx.measureText(p.text).width;
+          ctx.fillStyle = "rgba(10,10,10," + (p.alpha + 0.25) + ")";
+          ctx.fillRect(p.x - 3, p.y - p.size, w + 6, p.size + 6);
+        } else {
+          ctx.fillStyle = "rgba(22,24,27," + p.alpha + ")";
+          ctx.fillText(p.text, p.x, p.y);
+        }
+      });
+
+      sweep.x += sweep.speed;
+      if(sweep.x > W + 200){
+        sweep.x = -200;
+        particles.forEach(function(p){ p.redacted = false; });
+      }
+
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  } else if(canvas){
+    canvas.style.display = "none";
+  }
+
+})();
+</script>
+
+</body>
+</html>
