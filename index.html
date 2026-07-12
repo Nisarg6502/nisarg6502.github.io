@@ -154,13 +154,6 @@ button{ font-family: inherit; cursor: pointer; border:none; background:none; col
   border-bottom: 1px solid var(--line);
   overflow: hidden;
 }
-.hero canvas{
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0.55;
-}
 .hero-inner{
   position: relative;
   z-index: 2;
@@ -213,15 +206,19 @@ button{ font-family: inherit; cursor: pointer; border:none; background:none; col
   max-width: 62ch;
   margin-bottom: var(--s2);
 }
-.redact-hint{
-  font-family: var(--mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
-  margin-bottom: var(--s4);
+
+.hero-inner > *{
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity .7s cubic-bezier(.2,.7,.3,1), transform .7s cubic-bezier(.2,.7,.3,1);
 }
-.redact-hint::before{ content: "→ "; color: var(--accent); }
+body.loaded .hero-inner > *{ opacity: 1; transform: none; }
+body.loaded .hero-inner > *:nth-child(1){ transition-delay: .05s; }
+body.loaded .hero-inner > *:nth-child(2){ transition-delay: .12s; }
+body.loaded .hero-inner > *:nth-child(3){ transition-delay: .19s; }
+body.loaded .hero-inner > *:nth-child(4){ transition-delay: .26s; }
+body.loaded .hero-inner > *:nth-child(5){ transition-delay: .33s; }
+body.loaded .hero-inner > *:nth-child(6){ transition-delay: .40s; }
 
 .field-strip{
   display: grid;
@@ -421,6 +418,21 @@ button{ font-family: inherit; cursor: pointer; border:none; background:none; col
 .case-file .section-title{ color: var(--paper-on-ink); }
 .case-file .section-head{ border-color: var(--ink-line); }
 
+.case-file-entry{
+  padding-top: var(--s6);
+  border-top: 1px solid var(--ink-line);
+}
+.case-file-entry:first-of-type{
+  padding-top: 0;
+  border-top: none;
+}
+.exhibit-tag{
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin-bottom: var(--s3);
+}
 .case-file-grid{
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -724,6 +736,70 @@ footer{
   color: var(--ink-soft);
 }
 
+/* ============ LOADER ============ */
+.loader{
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--paper);
+  transition: opacity .5s ease, visibility .5s ease;
+}
+.loader-inner{ text-align: center; }
+.loader-tag{
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: var(--s2);
+}
+.loader-name{
+  position: relative;
+  display: inline-block;
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  margin-bottom: var(--s3);
+}
+.loader-redact{
+  position: absolute;
+  inset: -4px -8px;
+  background: var(--redact);
+  animation: loaderScan 1.5s ease-in-out infinite;
+}
+.loader-sub{
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: var(--s3);
+}
+.loader-track{
+  width: 220px;
+  height: 2px;
+  margin: 0 auto;
+  background: var(--line);
+  overflow: hidden;
+}
+.loader-fill{
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  transition: width .3s ease;
+}
+.loader.is-done{ opacity: 0; visibility: hidden; pointer-events: none; }
+body.is-loading{ overflow: hidden; }
+@keyframes loaderScan{
+  0%{ transform: scaleX(0); transform-origin: left; }
+  48%{ transform: scaleX(1); transform-origin: left; }
+  52%{ transform: scaleX(1); transform-origin: right; }
+  100%{ transform: scaleX(0); transform-origin: right; }
+}
+
 @media (prefers-reduced-motion: reduce){
   html{ scroll-behavior: auto; }
   .reveal{ opacity: 1; transform: none; transition: none; }
@@ -733,10 +809,24 @@ footer{
   .docket-file{ opacity: 1; transform: none; animation: none; }
   .case-tab .stamp-dot{ animation: none; }
   .tag:hover{ transform: none; }
+  .hero-inner > *{ opacity: 1; transform: none; transition: none; }
+  .loader-redact{ animation: none; display: none; }
+  .loader{ transition: none; }
 }
 </style>
 </head>
-<body>
+<body class="is-loading">
+
+<noscript><style>.loader{ display: none; } .hero-inner > *{ opacity: 1 !important; transform: none !important; }</style></noscript>
+
+<div class="loader" id="loader" role="status" aria-live="polite">
+  <div class="loader-inner">
+    <p class="loader-tag">File access request</p>
+    <p class="loader-name"><span class="loader-redact" aria-hidden="true"></span>N. KUDGUNTI</p>
+    <p class="loader-sub">Compiling dossier…</p>
+    <div class="loader-track"><div class="loader-fill" id="loaderFill"></div></div>
+  </div>
+</div>
 
 <div class="grain" aria-hidden="true"></div>
 
@@ -745,8 +835,8 @@ footer{
     <div class="nav-mark">N. KUDGUNTI <span class="stamp">// AI ENGINEER</span></div>
     <nav class="nav-links" id="navLinks">
       <a href="#about">About</a>
-      <a href="#project">Case File</a>
       <a href="#experience">Record</a>
+      <a href="#cases">Case Files</a>
       <a href="#skills">Index</a>
       <a href="#contact">Contact</a>
     </nav>
@@ -757,9 +847,8 @@ footer{
 
   <!-- ============ HERO ============ -->
   <section class="hero" id="hero">
-    <canvas id="heroCanvas" aria-hidden="true"></canvas>
     <div class="hero-inner">
-      <div class="case-tab"><span class="stamp-dot"></span> PERSONNEL FILE NO. 0150M</div>
+      <div class="case-tab"><span class="stamp-dot"></span> FILE STATUS: ACTIVE — OPEN TO OFFERS</div>
       <h1>Nisarg<br>Kudgunti</h1>
       <p class="hero-role">AI Engineer who ships multi-agent systems for Fortune 500 clients by day, and built a transformer from raw matrix multiplications by night.</p>
       <p class="hero-bio">
@@ -767,7 +856,7 @@ footer{
       </p>
 
       <div class="hero-cta">
-        <a href="#project" class="btn btn-solid">View the case file</a>
+        <a href="#cases" class="btn btn-solid">View the case files</a>
         <a href="Nisarg Kudgunti Resume.pdf" class="btn btn-outline" download>Download Resume</a>
       </div>
 
@@ -818,54 +907,12 @@ footer{
     </div>
   </section>
 
-  <!-- ============ CASE FILE: FEATURED PROJECT ============ -->
-  <section class="section case-file" id="project">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <div>
-          <p class="eyebrow"><span class="dot">·</span> 02 / EXHIBIT A</p>
-          <h2 class="section-title"><span class="title-redact"><span class="bar"></span><span class="txt">Case file</span></span></h2>
-        </div>
-      </div>
-      <div class="case-file-grid">
-        <div class="reveal">
-          <h3 class="case-name">Llama3-150M-<span class="hl">PII-Redactor</span></h3>
-          <p class="case-desc">A 150M-parameter, Llama 3 style decoder-only transformer, written from scratch in PyTorch rather than fine-tuned through someone else's framework. Pretrained on WikiText-103, then fine-tuned to detect and redact personally identifiable information, so the model that hides the data is the same model that was built to understand it.</p>
-          <p class="case-desc">The repository keeps pretraining and fine-tuning as clearly separated stages, so the architecture work and the task-specific adaptation can each be read on their own.</p>
-
-          <div class="demo-box">
-            <p class="demo-label">Live demo · pattern based, runs in your browser</p>
-            <textarea class="demo-input" id="demoInput" spellcheck="false">Hi, this is Rahul Mehta. You can reach me at rahul.mehta@example.com or +91 98765 43210 regarding the invoice.</textarea>
-            <div class="demo-row">
-              <button class="btn btn-outline" id="demoBtn" style="border-color:var(--ink-line); color:var(--paper-on-ink);">Run redaction</button>
-              <span class="demo-note">This is a lightweight rule-based stand-in. The trained model does this with learned attention, not regex. <a href="#" id="hfLink" target="_blank" rel="noopener">Try the real one on Hugging Face →</a></span>
-            </div>
-            <div class="demo-output" id="demoOutput" aria-live="polite"></div>
-          </div>
-        </div>
-
-        <div class="reveal">
-          <div class="spec-sheet">
-            <div class="spec-row"><span class="spec-k">Architecture</span><span class="spec-v">Decoder-only transformer, Llama 3 design: RoPE, RMSNorm, SwiGLU feedforward</span></div>
-            <div class="spec-row"><span class="spec-k">Parameters</span><span class="spec-v">~150M</span></div>
-            <div class="spec-row"><span class="spec-k">Framework</span><span class="spec-v">PyTorch, written from scratch</span></div>
-            <div class="spec-row"><span class="spec-k">Pretraining corpus</span><span class="spec-v">WikiText-103</span></div>
-            <div class="spec-row"><span class="spec-k">Fine-tune task</span><span class="spec-v">PII detection and redaction</span></div>
-            <div class="spec-row"><span class="spec-k">Fine-tune dataset</span><span class="spec-v">ai4privacy / pii-masking-200k</span></div>
-            <div class="spec-row"><span class="spec-k">Demo</span><span class="spec-v"><a href="#" id="hfLink2" target="_blank" rel="noopener">Hugging Face Space, PII-Redactor-Demo →</a></span></div>
-            <div class="spec-row"><span class="spec-k">Source</span><span class="spec-v"><a href="#" id="ghLink" target="_blank" rel="noopener">GitHub, Llama-Architecture-From-Scratch →</a></span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- ============ EXPERIENCE / DOCKET ============ -->
   <section class="section" id="experience">
     <div class="wrap">
       <div class="section-head reveal">
         <div>
-          <p class="eyebrow"><span class="dot">·</span> 03 / RECORD</p>
+          <p class="eyebrow"><span class="dot">·</span> 02 / RECORD</p>
           <h2 class="section-title"><span class="title-redact"><span class="bar"></span><span class="txt">Work on file</span></span></h2>
         </div>
       </div>
@@ -917,6 +964,56 @@ footer{
           </ul>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- ============ CASE FILES: PROJECTS ============ -->
+  <!-- To add a new project: copy one .case-file-entry block below, bump the
+       exhibit letter (A, B, C...), and fill in name/desc/specs. Omit the
+       .demo-box entirely for projects with no live demo. -->
+  <section class="section case-file" id="cases">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div>
+          <p class="eyebrow"><span class="dot">·</span> 03 / EXHIBITS</p>
+          <h2 class="section-title"><span class="title-redact"><span class="bar"></span><span class="txt">Case files</span></span></h2>
+        </div>
+      </div>
+
+      <div class="case-file-entry">
+        <div class="exhibit-tag reveal">EXHIBIT A</div>
+        <div class="case-file-grid">
+          <div class="reveal">
+            <h3 class="case-name">Llama3-150M-<span class="hl">PII-Redactor</span></h3>
+            <p class="case-desc">A 150M-parameter, Llama 3 style decoder-only transformer, written from scratch in PyTorch rather than fine-tuned through someone else's framework. Pretrained on WikiText-103, then fine-tuned to detect and redact personally identifiable information, so the model that hides the data is the same model that was built to understand it.</p>
+            <p class="case-desc">The repository keeps pretraining and fine-tuning as clearly separated stages, so the architecture work and the task-specific adaptation can each be read on their own.</p>
+
+            <div class="demo-box">
+              <p class="demo-label">Live demo · pattern based, runs in your browser</p>
+              <textarea class="demo-input" id="demoInput" spellcheck="false">Hi, this is Rahul Mehta. You can reach me at rahul.mehta@example.com or +91 98765 43210 regarding the invoice.</textarea>
+              <div class="demo-row">
+                <button class="btn btn-outline" id="demoBtn" style="border-color:var(--ink-line); color:var(--paper-on-ink);">Run redaction</button>
+                <span class="demo-note">This is a lightweight rule-based stand-in. The trained model does this with learned attention, not regex. <a href="#" id="hfLink" target="_blank" rel="noopener">Try the real one on Hugging Face →</a></span>
+              </div>
+              <div class="demo-output" id="demoOutput" aria-live="polite"></div>
+            </div>
+          </div>
+
+          <div class="reveal">
+            <div class="spec-sheet">
+              <div class="spec-row"><span class="spec-k">Architecture</span><span class="spec-v">Decoder-only transformer, Llama 3 design: RoPE, RMSNorm, SwiGLU feedforward</span></div>
+              <div class="spec-row"><span class="spec-k">Parameters</span><span class="spec-v">~150M</span></div>
+              <div class="spec-row"><span class="spec-k">Framework</span><span class="spec-v">PyTorch, written from scratch</span></div>
+              <div class="spec-row"><span class="spec-k">Pretraining corpus</span><span class="spec-v">WikiText-103</span></div>
+              <div class="spec-row"><span class="spec-k">Fine-tune task</span><span class="spec-v">PII detection and redaction</span></div>
+              <div class="spec-row"><span class="spec-k">Fine-tune dataset</span><span class="spec-v">ai4privacy / pii-masking-200k</span></div>
+              <div class="spec-row"><span class="spec-k">Demo</span><span class="spec-v"><a href="#" id="hfLink2" target="_blank" rel="noopener">Hugging Face Space, PII-Redactor-Demo →</a></span></div>
+              <div class="spec-row"><span class="spec-k">Source</span><span class="spec-v"><a href="#" id="ghLink" target="_blank" rel="noopener">GitHub, Llama-Architecture-From-Scratch →</a></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -1061,6 +1158,46 @@ footer{
 
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  /* ---------- screen loader ---------- */
+  (function(){
+    var loader = document.getElementById("loader");
+    var fill = document.getElementById("loaderFill");
+    if(!loader) return;
+
+    var progress = 0;
+    var tick = setInterval(function(){
+      progress += Math.random() * 18;
+      if(progress > 92) progress = 92;
+      if(fill) fill.style.width = progress + "%";
+    }, 160);
+
+    var finished = false;
+    function finish(){
+      if(finished) return;
+      finished = true;
+      clearInterval(tick);
+      if(fill) fill.style.width = "100%";
+      setTimeout(function(){
+        loader.classList.add("is-done");
+        document.body.classList.remove("is-loading");
+        document.body.classList.add("loaded");
+      }, reduceMotion ? 0 : 220);
+    }
+
+    var minDelay = reduceMotion ? 0 : 650;
+    var start = Date.now();
+    var fontsReady = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
+    var loaded = new Promise(function(resolve){
+      if(document.readyState === "complete") resolve();
+      else window.addEventListener("load", resolve);
+    });
+    Promise.all([fontsReady, loaded]).then(function(){
+      var elapsed = Date.now() - start;
+      setTimeout(finish, Math.max(0, minDelay - elapsed));
+    });
+    setTimeout(finish, 4000); // fallback so loader never gets stuck
+  })();
+
   /* ---------- redaction tap-toggle (for touch devices, hover already works via CSS) ---------- */
   document.querySelectorAll(".redact").forEach(function(el){
     el.addEventListener("click", function(){
@@ -1158,79 +1295,6 @@ footer{
       demoOutput.appendChild(runRedaction(demoInput.value || ""));
     });
     demoOutput.appendChild(runRedaction(demoInput.value || ""));
-  }
-
-  /* ---------- hero canvas: token flow + redaction sweep ---------- */
-  var canvas = document.getElementById("heroCanvas");
-  if(canvas && !reduceMotion){
-    var ctx = canvas.getContext("2d");
-    var hero = document.getElementById("hero");
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    var W, H;
-    var tokens = ["RoPE","RMSNorm","SwiGLU","attn","logits","[MASK]","Q·K","softmax","<PII>","token","embed","0x4F2C","ffn","head_7","norm","decode"];
-
-    function resize(){
-      W = hero.clientWidth;
-      H = hero.clientHeight;
-      canvas.width = W * dpr;
-      canvas.height = H * dpr;
-      canvas.style.width = W + "px";
-      canvas.style.height = H + "px";
-      ctx.setTransform(dpr,0,0,dpr,0,0);
-    }
-    resize();
-    window.addEventListener("resize", resize);
-
-    var particles = [];
-    var COUNT = Math.max(18, Math.min(34, Math.floor(W / 60)));
-    for(var i=0;i<COUNT;i++){
-      particles.push({
-        x: Math.random()*W,
-        y: Math.random()*H,
-        vx: 0.12 + Math.random()*0.22,
-        text: tokens[Math.floor(Math.random()*tokens.length)],
-        size: 11 + Math.random()*4,
-        alpha: 0.08 + Math.random()*0.16,
-        redacted: false,
-        flipAt: 200 + Math.random()*600
-      });
-    }
-
-    var sweep = { x: -200, active: true, speed: 1.4 };
-
-    function tick(){
-      ctx.clearRect(0,0,W,H);
-      ctx.font = "12px " + getComputedStyle(document.body).fontFamily;
-
-      particles.forEach(function(p){
-        p.x += p.vx;
-        if(p.x > W + 60){ p.x = -60; p.y = Math.random()*H; p.text = tokens[Math.floor(Math.random()*tokens.length)]; p.redacted = false; }
-
-        var nearSweep = Math.abs(p.x - sweep.x) < 14;
-        if(nearSweep) p.redacted = true;
-
-        ctx.font = p.size + "px IBM Plex Mono, monospace";
-        if(p.redacted){
-          var w = ctx.measureText(p.text).width;
-          ctx.fillStyle = "rgba(10,10,10," + (p.alpha + 0.25) + ")";
-          ctx.fillRect(p.x - 3, p.y - p.size, w + 6, p.size + 6);
-        } else {
-          ctx.fillStyle = "rgba(22,24,27," + p.alpha + ")";
-          ctx.fillText(p.text, p.x, p.y);
-        }
-      });
-
-      sweep.x += sweep.speed;
-      if(sweep.x > W + 200){
-        sweep.x = -200;
-        particles.forEach(function(p){ p.redacted = false; });
-      }
-
-      requestAnimationFrame(tick);
-    }
-    requestAnimationFrame(tick);
-  } else if(canvas){
-    canvas.style.display = "none";
   }
 
 })();
