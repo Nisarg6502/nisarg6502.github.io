@@ -1520,7 +1520,18 @@ body.is-loading{ overflow: hidden; }
 
     function render(){
       track.style.transform = "translateX(-" + (active * 100) + "%)";
-      entries.forEach(function(e, i){ e.classList.toggle("is-active", i === active); });
+      entries.forEach(function(e, i){
+        var isActive = i === active;
+        e.classList.toggle("is-active", isActive);
+        if(isActive){
+          e.removeAttribute("aria-hidden");
+          e.removeAttribute("inert");
+          e.querySelectorAll(".reveal").forEach(function(el){ el.classList.add("is-visible"); });
+        } else {
+          e.setAttribute("aria-hidden", "true");
+          e.setAttribute("inert", "");
+        }
+      });
       tabs.forEach(function(t, i){
         t.classList.toggle("is-active", i === active);
         t.setAttribute("aria-selected", i === active ? "true" : "false");
@@ -1537,6 +1548,7 @@ body.is-loading{ overflow: hidden; }
     if(prevBtn) prevBtn.addEventListener("click", function(){ if(active > 0){ active--; render(); } });
     if(nextBtn) nextBtn.addEventListener("click", function(){ if(active < total - 1){ active++; render(); } });
     window.addEventListener("resize", setHeight);
+    if(document.fonts && document.fonts.ready) document.fonts.ready.then(setHeight);
 
     render();
   })();

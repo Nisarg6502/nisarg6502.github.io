@@ -101,3 +101,23 @@ via DOM queries instead of screenshots if it recurs.
   stuff" from earlier. Redesigned `.index-card` (skills section): ghost
   watermark number, two-letter category code badge, hover lift + shadow —
   was flagged as "too bland."
+- 2026-07-13 (yet again): `.hero-visual` gray skeleton-style bars read as an
+  unfinished loading state, not a redacted document — replaced with real
+  "case log" text using the site's `.redact`/`.rtext`/`.rbar` hover-reveal
+  component (previously defined in CSS but unused anywhere in markup).
+  Reworded the About section's closing line ("that project sits at the
+  center of this page") since it was written when there was only one case
+  file — now references both Llama-PII and Counterpoint.
+- 2026-07-13 (PR review pass): Opened branch `feat/counterpoint-case-carousel-ux`,
+  had a subagent independently review the diff. Fixed 3 real bugs it found
+  in the case carousel JS (search "case carousel" in `<script>`): (1)
+  inactive slides were still keyboard/screen-reader reachable despite being
+  visually clipped — now toggle `aria-hidden`/`inert` on non-active
+  `.case-file-entry` elements; (2) `.is-active` on `.case-file-entry` was
+  dead (no CSS targeted it) — now used as the hook for the aria-hidden/inert
+  toggle above, and also to force-mark that slide's `.reveal` children
+  `is-visible` immediately on switch (previously they could pop in a beat
+  late since `IntersectionObserver` wasn't triggering on the horizontally
+  offset, `overflow:hidden`-clipped inactive slide); (3) `setHeight()` never
+  recomputed after web fonts swapped in — added a `document.fonts.ready`
+  listener alongside the existing resize listener.
