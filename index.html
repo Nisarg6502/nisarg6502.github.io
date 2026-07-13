@@ -154,11 +154,101 @@ button{ font-family: inherit; cursor: pointer; border:none; background:none; col
   border-bottom: 1px solid var(--line);
   overflow: hidden;
 }
-.hero-inner{
+.hero-grid{
   position: relative;
   z-index: 2;
   max-width: var(--maxw);
   margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: var(--s6);
+  align-items: center;
+}
+@media (max-width: 980px){
+  .hero-grid{ grid-template-columns: 1fr; }
+  .hero-visual{ display: none; }
+}
+.hero-visual{
+  opacity: 0;
+  transform: translateX(18px) scale(0.98);
+  transition: opacity .8s cubic-bezier(.2,.7,.3,1), transform .8s cubic-bezier(.2,.7,.3,1);
+  transition-delay: .5s;
+}
+body.loaded .hero-visual{ opacity: 1; transform: none; }
+.hero-visual-card{
+  position: relative;
+  border: 1px solid var(--line);
+  background: rgba(22,24,27,0.025);
+  padding: var(--s4);
+}
+.hero-visual-head{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: var(--s3);
+  margin-bottom: var(--s3);
+  border-bottom: 1px solid var(--line);
+}
+.hero-visual-label{
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.hero-stamp{
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 0.15rem 0.5rem;
+  transform: rotate(-4deg);
+  display: inline-block;
+}
+.hero-visual-lines{
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin-bottom: var(--s4);
+}
+.hvl-tag{
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.hvl-line{
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+.hvl-line .redact{ color: var(--ink); }
+.hero-visual-stats{
+  display: flex;
+  gap: var(--s4);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--line);
+}
+.hvs{ display: flex; flex-direction: column; gap: 0.2rem; }
+.hvs-num{
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 1.9rem;
+  color: var(--ink);
+}
+.hvs-label{
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  line-height: 1.3;
 }
 .case-tab{
   display: inline-flex;
@@ -418,13 +508,81 @@ body.loaded .hero-inner > *:nth-child(6){ transition-delay: .40s; }
 .case-file .section-title{ color: var(--paper-on-ink); }
 .case-file .section-head{ border-color: var(--ink-line); }
 
-.case-file-entry{
-  padding-top: var(--s6);
-  border-top: 1px solid var(--ink-line);
+/* case files: horizontal carousel, one exhibit visible at a time */
+.case-nav-row{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s3);
+  flex-wrap: wrap;
+  margin-bottom: var(--s5);
+  padding-bottom: var(--s3);
+  border-bottom: 1px solid var(--ink-line);
 }
-.case-file-entry:first-of-type{
-  padding-top: 0;
-  border-top: none;
+.case-tabs{
+  display: flex;
+  gap: var(--s4);
+  flex-wrap: wrap;
+}
+.case-tab-btn{
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  color: rgba(236,232,220,0.5);
+  padding-bottom: 0.6rem;
+  border-bottom: 2px solid transparent;
+  transition: color .2s ease, border-color .2s ease;
+}
+.case-tab-btn:hover{ color: rgba(236,232,220,0.85); }
+.case-tab-btn.is-active{ color: var(--paper-on-ink); border-bottom-color: var(--accent); }
+.case-tab-letter{
+  font-weight: 600;
+  color: var(--accent);
+  border: 1px solid var(--ink-line);
+  padding: 0.1rem 0.45rem;
+  transition: border-color .2s ease;
+}
+.case-tab-btn.is-active .case-tab-letter{ border-color: var(--accent); }
+.case-pager{
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+}
+.case-arrow{
+  width: 2.3rem;
+  height: 2.3rem;
+  border: 1px solid var(--ink-line);
+  color: var(--paper-on-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: background .2s ease, border-color .2s ease, transform .15s ease;
+}
+.case-arrow:hover:not(:disabled){ background: var(--accent); border-color: var(--accent); transform: translateY(-1px); }
+.case-arrow:disabled{ opacity: 0.28; cursor: default; }
+.case-count{
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: rgba(236,232,220,0.6);
+  min-width: 3.6rem;
+  text-align: center;
+}
+.case-viewport{
+  position: relative;
+  overflow: hidden;
+  transition: height .45s cubic-bezier(.2,.7,.3,1);
+}
+.case-track{
+  display: flex;
+  transition: transform .5s cubic-bezier(.65,0,.35,1);
+}
+.case-file-entry{
+  flex: 0 0 100%;
+  max-width: 100%;
 }
 .exhibit-tag{
   font-family: var(--mono);
@@ -432,6 +590,10 @@ body.loaded .hero-inner > *:nth-child(6){ transition-delay: .40s; }
   letter-spacing: 0.12em;
   color: var(--accent);
   margin-bottom: var(--s3);
+}
+@media (max-width: 720px){
+  .case-nav-row{ flex-direction: column; align-items: flex-start; }
+  .case-tab-btn{ font-size: 0.72rem; }
 }
 .case-file-grid{
   display: grid;
@@ -603,20 +765,60 @@ body.loaded .hero-inner > *:nth-child(6){ transition-delay: .40s; }
   gap: var(--s4);
 }
 .index-card{
+  position: relative;
+  overflow: hidden;
   border: 1px solid var(--line);
-  padding: var(--s3);
+  padding: var(--s4);
+  background: var(--paper);
+  transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease;
+}
+.index-card::after{
+  content: attr(data-index);
+  position: absolute;
+  top: -0.35em;
+  right: 0.15em;
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 4.6rem;
+  line-height: 1;
+  color: var(--ink);
+  opacity: 0.045;
+  pointer-events: none;
+}
+.index-card:hover{
+  border-color: var(--accent);
+  transform: translateY(-4px);
+  box-shadow: 0 18px 34px -22px rgba(22,24,27,0.4);
+}
+.index-card-head{
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: var(--s3);
+  padding-bottom: var(--s2);
+  border-bottom: 1px solid var(--line);
+}
+.index-card-code{
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 0.1rem 0.4rem;
+  flex-shrink: 0;
 }
 .index-card-title{
   font-family: var(--mono);
   font-size: 0.7rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: var(--s3);
-  padding-bottom: var(--s2);
-  border-bottom: 1px solid var(--line);
+  color: var(--ink-soft);
 }
 .tag-list{
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
@@ -627,13 +829,14 @@ body.loaded .hero-inner > *:nth-child(6){ transition-delay: .40s; }
   border: 1px solid var(--line);
   padding: 0.3rem 0.6rem;
   color: var(--ink-soft);
-  transition: transform .15s ease, background .2s ease, color .2s ease, border-color .2s ease;
+  transition: transform .15s ease, background .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease;
 }
 .tag:hover{
-  transform: scale(0.95);
+  transform: translateY(-2px);
   background: var(--ink);
   color: var(--paper);
   border-color: var(--ink);
+  box-shadow: 0 8px 16px -10px rgba(22,24,27,0.5);
 }
 @media (max-width: 980px){
   .index-grid{ grid-template-columns: repeat(2, 1fr); }
@@ -812,6 +1015,10 @@ body.is-loading{ overflow: hidden; }
   .hero-inner > *{ opacity: 1; transform: none; transition: none; }
   .loader-redact{ animation: none; display: none; }
   .loader{ transition: none; }
+  .case-track{ transition: none; }
+  .case-viewport{ transition: none; }
+  .case-arrow:hover{ transform: none; }
+  .hero-visual{ opacity: 1; transform: none; transition: none; }
 }
 </style>
 </head>
@@ -847,6 +1054,7 @@ body.is-loading{ overflow: hidden; }
 
   <!-- ============ HERO ============ -->
   <section class="hero" id="hero">
+    <div class="hero-grid">
     <div class="hero-inner">
       <div class="case-tab"><span class="stamp-dot"></span> FILE STATUS: ACTIVE — OPEN TO OFFERS</div>
       <h1>Nisarg<br>Kudgunti</h1>
@@ -879,6 +1087,31 @@ body.is-loading{ overflow: hidden; }
         </div>
       </div>
     </div>
+
+    <div class="hero-visual" aria-hidden="true">
+      <div class="hero-visual-card">
+        <div class="hero-visual-head">
+          <span class="hero-visual-label">Case index</span>
+          <span class="hero-stamp">Verified</span>
+        </div>
+        <div class="hero-visual-lines">
+          <p class="hvl-tag">Case log — entry 04</p>
+          <p class="hvl-line">Ships production multi-agent systems by day; rebuilt a <span class="redact"><span class="rtext">Llama 3 transformer</span><span class="rbar"></span></span> from scratch by night.</p>
+          <p class="hvl-line">Status: actively filing new exhibits below.</p>
+        </div>
+        <div class="hero-visual-stats">
+          <div class="hvs">
+            <span class="hvs-num">02</span>
+            <span class="hvs-label">Exhibits<br>on file</span>
+          </div>
+          <div class="hvs">
+            <span class="hvs-num">03</span>
+            <span class="hvs-label">Roles<br>on record</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
   </section>
 
   <!-- ============ ABOUT ============ -->
@@ -893,7 +1126,7 @@ body.is-loading{ overflow: hidden; }
       <div class="about-grid">
         <div class="about-text reveal">
           <p>Nisarg builds the infrastructure layer of generative AI: multi-agent orchestration, retrieval pipelines, and the evaluation loops that keep them honest in production. At Techolution, his work spans vulnerability remediation agents, hybrid RAG systems over thousands of enterprise forms, and natural-language-to-SQL pipelines that turned multi-day reporting into a sub-minute process.</p>
-          <p>Most of that work means directing large pretrained models. To understand what is actually happening underneath them, he implemented the Llama 3 architecture from first principles in PyTorch: rotary position embeddings, RMSNorm, SwiGLU, the full decoder stack, then pretrained and fine-tuned it himself. That project sits at the center of this page.</p>
+          <p>Most of that work means directing large pretrained models. To understand what is actually happening underneath them, he implemented the Llama 3 architecture from first principles in PyTorch: rotary position embeddings, RMSNorm, SwiGLU, the full decoder stack, then pretrained and fine-tuned it himself. That same instinct toward verifiable AI led to Counterpoint, an agentic RAG system that traces every claim it makes back to a verbatim source quote. Both are on file below.</p>
           <p>He holds a BE in Computer Engineering with Honors in AI/ML from PVGCOET, Pune, and is Microsoft Certified in Azure AI Fundamentals.</p>
         </div>
         <div class="about-side reveal">
@@ -930,8 +1163,8 @@ body.is-loading{ overflow: hidden; }
             <li>Built a repo-scoped feedback loop on an AlloyDB vector store, embedding accepted, regenerated, and PR-comment feedback with language and type metadata, retrieving the top 5 fixes by cosine similarity to keep outputs aligned to each codebase.</li>
             <li>Built a hybrid RAG conversational agent over 4,000+ cost estimation forms for an enterprise retail client, using whole-form chunking and LLM-based entity extraction to pre-filter retrieval by known form fields.</li>
             <li>Designed a key-aware citation system that highlights the exact field and value a generated answer was sourced from, directly inside the original form.</li>
-            <li>Reduced construction schedule reporting from 2 to 3 days down to under a minute with an NL-to-SQL agent over 8,000+ forms, consolidating 80+ tables into 20 UI-mirrored tables to cut hallucination, and a multi-tool pipeline of table selector, SQL writer, validator, and executor.</li>
-            <li>Currently building a multi-agent platform that compresses client project delivery from 3 to 4 weeks down to 3 to 4 days through automated categorization and gap resolution.</li>
+            <li>Reduced construction schedule reporting from 2 to 3 days down to under a minute with an NL-to-SQL agent over 8,000+ forms, consolidating 80+ tables into 20 UI-mirrored tables to cut hallucination, and a multi-tool pipeline of table selector, SQL writer, validator, executor, and LLM summarizer with table-level schema metadata, DML blocklist validation, cross-project comparisons, trend analysis, and XLSX export.</li>
+            <li>Building a multi-agent platform reducing client project delivery from 3 to 4 weeks down to 3 to 4 days via automated data categorization and segmentation, with gap resolution and impact analysis that identifies low-confidence AI outputs, guides structured resolution, and applies fixes across dependent segments.</li>
           </ul>
         </div>
       </div>
@@ -945,8 +1178,9 @@ body.is-loading{ overflow: hidden; }
           <div class="docket-role">AI Intern</div>
           <div class="docket-org">Techolution · Onsite</div>
           <ul class="docket-list">
-            <li>Engineered RAG Fusion and HDBSCAN/SOM-based clustering to improve retrieval quality across applications.</li>
-            <li>Cut VertexAI inference cost by more than 50% by replacing Claude 3.5 Sonnet with Qwen-2.5-Coder served on Cloud Run via vLLM.</li>
+            <li>Built Project Analyser, a 10+ language GitHub repository analysis pipeline benchmarked at 80k files against the Linux kernel, using Qwen on Cloud Run via vLLM for per-file summarization and Gemini on Vertex AI for executive summaries, service extraction, and dependency graphs.</li>
+            <li>Extended the pipeline with HDBSCAN SOM-based clustering to derive hierarchical feature taxonomies and LLM-generated JSON schemas rendered as ReactFlow architecture diagrams.</li>
+            <li>Reduced VertexAI inference cost by more than 90% by replacing proprietary LLMs with Qwen-2.5-Coder served on Cloud Run via vLLM.</li>
           </ul>
         </div>
       </div>
@@ -960,7 +1194,7 @@ body.is-loading{ overflow: hidden; }
           <div class="docket-role">Data Science Intern</div>
           <div class="docket-org">AlgoAnalytics · Remote</div>
           <ul class="docket-list">
-            <li>Improved a RAG application's RAGAS metrics using LangChain, FAISS, LLM-based reranking, and custom chunking strategies.</li>
+            <li>Enhanced a RAG application using LangChain, FAISS, LLM reranking, and innovative chunking strategies to improve RAGAS metrics and Generative AI performance.</li>
           </ul>
         </div>
       </div>
@@ -968,9 +1202,12 @@ body.is-loading{ overflow: hidden; }
   </section>
 
   <!-- ============ CASE FILES: PROJECTS ============ -->
-  <!-- To add a new project: copy one .case-file-entry block below, bump the
-       exhibit letter (A, B, C...), and fill in name/desc/specs. Omit the
-       .demo-box entirely for projects with no live demo. -->
+  <!-- To add a new project: duplicate one .case-file-entry block (inside
+       #caseTrack) and one .case-tab-btn (inside #caseTabs), bump the exhibit
+       letter (A, B, C...) and data-case index, fill in name/desc/specs.
+       Omit .demo-box entirely for projects with no live demo. The carousel
+       JS (search "case carousel" in the script below) reads entry/tab count
+       automatically, no changes needed there. -->
   <section class="section case-file" id="cases">
     <div class="wrap">
       <div class="section-head reveal">
@@ -980,7 +1217,26 @@ body.is-loading{ overflow: hidden; }
         </div>
       </div>
 
-      <div class="case-file-entry">
+      <div class="case-nav-row reveal">
+        <div class="case-tabs" id="caseTabs" role="tablist">
+          <button class="case-tab-btn" data-case="0" role="tab" aria-selected="false">
+            <span class="case-tab-letter">A</span> Llama3-150M-PII-Redactor
+          </button>
+          <button class="case-tab-btn" data-case="1" role="tab" aria-selected="false">
+            <span class="case-tab-letter">B</span> Counterpoint
+          </button>
+        </div>
+        <div class="case-pager">
+          <button class="case-arrow" id="casePrev" aria-label="Previous case file">←</button>
+          <span class="case-count" id="caseCount">01 / 02</span>
+          <button class="case-arrow" id="caseNext" aria-label="Next case file">→</button>
+        </div>
+      </div>
+
+      <div class="case-viewport" id="caseViewport">
+      <div class="case-track" id="caseTrack">
+
+      <div class="case-file-entry" data-case="0">
         <div class="exhibit-tag reveal">EXHIBIT A</div>
         <div class="case-file-grid">
           <div class="reveal">
@@ -1014,6 +1270,35 @@ body.is-loading{ overflow: hidden; }
         </div>
       </div>
 
+      <div class="case-file-entry" data-case="1">
+        <div class="exhibit-tag reveal">EXHIBIT B</div>
+        <div class="case-file-grid">
+          <div class="reveal">
+            <h3 class="case-name">Counterpoint — <span class="hl">Corporate Contradiction Detector</span></h3>
+            <p class="case-desc">A full-stack AI research tool that ingests a public company's SEC filings, extracts every claim management makes in their exact words, builds a knowledge graph of those claims, and detects contradictions across time. Every finding traces back to a verbatim, verified quote in the source document, never a paraphrase.</p>
+            <p class="case-desc">The chat assistant scoped to each company is agentic, hybrid, grounding-verified RAG: a LangGraph orchestrator chooses between dense vector search and GraphRAG over Neo4j, is hard-locked to the open company's ticker, and has its output checked against what was actually retrieved before anything is shown.</p>
+            <p class="case-desc">Live processing runs the full pipeline, fetch through parse, extraction, graph, index, and detection, on any public company on demand, with a bounded free-tier run of a few minutes.</p>
+          </div>
+
+          <div class="reveal">
+            <div class="spec-sheet">
+              <div class="spec-row"><span class="spec-k">Pipeline</span><span class="spec-v">SEC EDGAR filings → paragraph chunks with position anchors → LLM claim extraction with a verbatim quote-span guardrail → Neo4j + Qdrant → contradiction detection</span></div>
+              <div class="spec-row"><span class="spec-k">Chat agent</span><span class="spec-v">LangGraph agentic hybrid RAG (dense + GraphRAG), ticker-scoped, grounding-verified with regeneration fallback</span></div>
+              <div class="spec-row"><span class="spec-k">Graph DB</span><span class="spec-v">Neo4j (Aura) — claims, speakers, documents, topics, contradiction edges with severity and reasoning</span></div>
+              <div class="spec-row"><span class="spec-k">Vector DB</span><span class="spec-v">Qdrant (Cloud), FastEmbed BAAI/bge-small-en-v1.5 (ONNX/CPU, no PyTorch)</span></div>
+              <div class="spec-row"><span class="spec-k">LLMs</span><span class="spec-v">Ollama Cloud gpt-oss:120b (extraction, judgment, synthesis), gpt-oss:20b (guardrail/intent), config-driven and swappable</span></div>
+              <div class="spec-row"><span class="spec-k">Backend</span><span class="spec-v">Python, FastAPI, Server-Sent Events for token streaming</span></div>
+              <div class="spec-row"><span class="spec-k">Frontend</span><span class="spec-v">React + Vite, hand-built SVG contradiction graph and citation viewer</span></div>
+              <div class="spec-row"><span class="spec-k">Testing &amp; observability</span><span class="spec-v">63 network-free pytest tests, full LLM call tracing via Langfuse</span></div>
+              <div class="spec-row"><span class="spec-k">Source</span><span class="spec-v"><a href="#" id="cpGhLink" target="_blank" rel="noopener">GitHub, Counterpoint →</a></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      </div>
+      </div>
+
     </div>
   </section>
 
@@ -1027,32 +1312,45 @@ body.is-loading{ overflow: hidden; }
         </div>
       </div>
       <div class="index-grid">
-        <div class="index-card reveal spotlight">
-          <div class="index-card-title">Frameworks</div>
+        <div class="index-card reveal spotlight" data-index="01">
+          <div class="index-card-head">
+            <span class="index-card-code">FW</span>
+            <span class="index-card-title">Frameworks</span>
+          </div>
           <div class="tag-list">
             <span class="tag">LangChain</span><span class="tag">LangGraph</span><span class="tag">LlamaIndex</span>
             <span class="tag">PyTorch</span><span class="tag">FastAPI</span><span class="tag">Flask</span>
           </div>
         </div>
-        <div class="index-card reveal spotlight">
-          <div class="index-card-title">AI systems</div>
+        <div class="index-card reveal spotlight" data-index="02">
+          <div class="index-card-head">
+            <span class="index-card-code">AI</span>
+            <span class="index-card-title">AI systems</span>
+          </div>
           <div class="tag-list">
             <span class="tag">Multi-Agent Systems</span><span class="tag">RAG</span><span class="tag">LLM Fine-tuning</span>
-            <span class="tag">Prompt Engineering</span><span class="tag">MCP</span>
+            <span class="tag">Prompt Engineering</span><span class="tag">MCP</span><span class="tag">LLM Observability (Langfuse)</span>
           </div>
         </div>
-        <div class="index-card reveal spotlight">
-          <div class="index-card-title">Infrastructure</div>
+        <div class="index-card reveal spotlight" data-index="03">
+          <div class="index-card-head">
+            <span class="index-card-code">IN</span>
+            <span class="index-card-title">Infrastructure</span>
+          </div>
           <div class="tag-list">
             <span class="tag">GCP</span><span class="tag">Azure</span><span class="tag">AWS</span>
             <span class="tag">Docker</span><span class="tag">Kubernetes</span><span class="tag">vLLM</span><span class="tag">Ollama</span>
           </div>
         </div>
-        <div class="index-card reveal spotlight">
-          <div class="index-card-title">Data</div>
+        <div class="index-card reveal spotlight" data-index="04">
+          <div class="index-card-head">
+            <span class="index-card-code">DB</span>
+            <span class="index-card-title">Data</span>
+          </div>
           <div class="tag-list">
             <span class="tag">Python</span><span class="tag">SQL</span><span class="tag">MongoDB</span><span class="tag">Redis</span>
             <span class="tag">FAISS</span><span class="tag">ChromaDB</span><span class="tag">Pinecone</span><span class="tag">AlloyDB</span>
+            <span class="tag">Qdrant</span><span class="tag">Neo4j</span>
           </div>
         </div>
       </div>
@@ -1148,12 +1446,14 @@ body.is-loading{ overflow: hidden; }
     github: "https://github.com/Nisarg6502",
     kaggle: "https://kaggle.com/nisargkudgunti",
     githubRepo: "https://github.com/Nisarg6502/Llama-Architecture-From-Scratch",
-    huggingface: "https://huggingface.co/spaces/nisarg6502/PII-Redactor-Demo"
+    huggingface: "https://huggingface.co/spaces/nisarg6502/PII-Redactor-Demo",
+    counterpointRepo: "https://github.com/Nisarg6502/Corporate-Contradiction-Detector"
   };
   ["liLink"].forEach(function(id){ var el=document.getElementById(id); if(el) el.href=LINKS.linkedin; });
   ["ghLink2"].forEach(function(id){ var el=document.getElementById(id); if(el) el.href=LINKS.github; });
   ["kgLink"].forEach(function(id){ var el=document.getElementById(id); if(el) el.href=LINKS.kaggle; });
   ["ghLink"].forEach(function(id){ var el=document.getElementById(id); if(el) el.href=LINKS.githubRepo; });
+  if(LINKS.counterpointRepo){ ["cpGhLink"].forEach(function(id){ var el=document.getElementById(id); if(el) el.href=LINKS.counterpointRepo; }); }
   ["hfLink","hfLink2"].forEach(function(id){ var el=document.getElementById(id); if(el) el.href=LINKS.huggingface; });
 
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1196,6 +1496,49 @@ body.is-loading{ overflow: hidden; }
       setTimeout(finish, Math.max(0, minDelay - elapsed));
     });
     setTimeout(finish, 4000); // fallback so loader never gets stuck
+  })();
+
+  /* ---------- case carousel: horizontal exhibit switcher ---------- */
+  (function(){
+    var track = document.getElementById("caseTrack");
+    var viewport = document.getElementById("caseViewport");
+    var entries = document.querySelectorAll(".case-file-entry");
+    var tabs = document.querySelectorAll(".case-tab-btn");
+    var prevBtn = document.getElementById("casePrev");
+    var nextBtn = document.getElementById("caseNext");
+    var countEl = document.getElementById("caseCount");
+    if(!track || !entries.length) return;
+
+    var active = 0;
+    var total = entries.length;
+    function pad(n){ return n < 10 ? "0" + n : "" + n; }
+
+    function setHeight(){
+      var el = entries[active];
+      if(viewport && el) viewport.style.height = el.offsetHeight + "px";
+    }
+
+    function render(){
+      track.style.transform = "translateX(-" + (active * 100) + "%)";
+      entries.forEach(function(e, i){ e.classList.toggle("is-active", i === active); });
+      tabs.forEach(function(t, i){
+        t.classList.toggle("is-active", i === active);
+        t.setAttribute("aria-selected", i === active ? "true" : "false");
+      });
+      if(countEl) countEl.textContent = pad(active + 1) + " / " + pad(total);
+      if(prevBtn) prevBtn.disabled = active === 0;
+      if(nextBtn) nextBtn.disabled = active === total - 1;
+      requestAnimationFrame(setHeight);
+    }
+
+    tabs.forEach(function(t, i){
+      t.addEventListener("click", function(){ active = i; render(); });
+    });
+    if(prevBtn) prevBtn.addEventListener("click", function(){ if(active > 0){ active--; render(); } });
+    if(nextBtn) nextBtn.addEventListener("click", function(){ if(active < total - 1){ active++; render(); } });
+    window.addEventListener("resize", setHeight);
+
+    render();
   })();
 
   /* ---------- redaction tap-toggle (for touch devices, hover already works via CSS) ---------- */
