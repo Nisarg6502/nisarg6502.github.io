@@ -1225,10 +1225,13 @@ body.is-loading{ overflow: hidden; }
           <button class="case-tab-btn" data-case="1" role="tab" aria-selected="false">
             <span class="case-tab-letter">B</span> Counterpoint
           </button>
+          <button class="case-tab-btn" data-case="2" role="tab" aria-selected="false">
+            <span class="case-tab-letter">C</span> PayWise
+          </button>
         </div>
         <div class="case-pager">
           <button class="case-arrow" id="casePrev" aria-label="Previous case file">←</button>
-          <span class="case-count" id="caseCount">01 / 02</span>
+          <span class="case-count" id="caseCount">01 / 03</span>
           <button class="case-arrow" id="caseNext" aria-label="Next case file">→</button>
         </div>
       </div>
@@ -1296,6 +1299,43 @@ body.is-loading{ overflow: hidden; }
         </div>
       </div>
 
+      <div class="case-file-entry" data-case="2">
+        <div class="exhibit-tag reveal">EXHIBIT C</div>
+        <div class="case-file-grid">
+          <div class="reveal">
+            <h3 class="case-name">PayWise — <span class="hl">LangGraph Credit Card Optimizer</span></h3>
+            <p class="case-desc">PayWise answers "which card should I use for this purchase?" with math, not vibes. It runs a 5-stage LangGraph agent that extracts your purchase intent, retrieves reward-rule text from your own cards only, reranks for relevance, computes cashback deterministically in Python, then has an LLM explain the answer in plain English.</p>
+            <p class="case-desc">Fully traced in Langfuse, scored against a golden eval dataset, deployed via GitHub-triggered CI/CD, all on managed cloud APIs, no GPUs or local models. Deterministic reward math stays completely separated from the two LLM calls, so the one number that matters never hallucinates.</p>
+            <p class="case-desc">Evals surfaced real issues instead of hiding them: an exhausted LLM API quota that had silently broken prod chat, and a genuine math-node limitation (no rule-specificity tiebreaker), both documented rather than papered over. Also caught a production bug pre-launch, Cloud Run's forwarded-proto header wasn't trusted by uvicorn, silently generating <code>http://</code> OAuth redirect URIs that would've broken every login.</p>
+
+            <div class="demo-box">
+              <p class="demo-label">Live app</p>
+              <div class="demo-row">
+                <a class="btn btn-outline" href="#" id="pwAppLink" target="_blank" rel="noopener" style="border-color:var(--ink-line); color:var(--paper-on-ink);">Open PayWise →</a>
+                <span class="demo-note">Google OAuth sign-in required. <a href="#" id="pwDocsLink" target="_blank" rel="noopener">API docs (FastAPI/Swagger) →</a></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="reveal">
+            <div class="spec-sheet">
+              <div class="spec-row"><span class="spec-k">Architecture</span><span class="spec-v">LangGraph agent: extract_intent → retrieve_rules → rerank → calculate_math → generate_response, streamed to the UI over SSE</span></div>
+              <div class="spec-row"><span class="spec-k">Backend</span><span class="spec-v">FastAPI, deterministic reward math isolated from LLM calls</span></div>
+              <div class="spec-row"><span class="spec-k">Frontend</span><span class="spec-v">Next.js 14</span></div>
+              <div class="spec-row"><span class="spec-k">Vector DB</span><span class="spec-v">Qdrant Cloud</span></div>
+              <div class="spec-row"><span class="spec-k">Database</span><span class="spec-v">Neon Postgres</span></div>
+              <div class="spec-row"><span class="spec-k">Embeddings / rerank</span><span class="spec-v">Jina AI</span></div>
+              <div class="spec-row"><span class="spec-k">LLMs</span><span class="spec-v">Ollama Cloud / HF Qwen3, swappable</span></div>
+              <div class="spec-row"><span class="spec-k">Auth</span><span class="spec-v">Google OAuth</span></div>
+              <div class="spec-row"><span class="spec-k">Observability</span><span class="spec-v">Langfuse, lightweight decorator over pulling in all of LangChain</span></div>
+              <div class="spec-row"><span class="spec-k">Deployment</span><span class="spec-v">GCP Cloud Run + Cloud Build, path-filtered CI/CD triggers</span></div>
+              <div class="spec-row"><span class="spec-k">Eval scorecard</span><span class="spec-v">15-query golden dataset — Intent extraction 87% · Retrieval 93% · Reward math/winner 67% (all 5 misses trace to one documented root cause)</span></div>
+              <div class="spec-row"><span class="spec-k">Source</span><span class="spec-v"><a href="#" id="pwGhLink" target="_blank" rel="noopener">GitHub, PayWise →</a></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       </div>
       </div>
 
@@ -1319,7 +1359,7 @@ body.is-loading{ overflow: hidden; }
           </div>
           <div class="tag-list">
             <span class="tag">LangChain</span><span class="tag">LangGraph</span><span class="tag">LlamaIndex</span>
-            <span class="tag">PyTorch</span><span class="tag">FastAPI</span><span class="tag">Flask</span>
+            <span class="tag">PyTorch</span><span class="tag">FastAPI</span><span class="tag">Flask</span><span class="tag">Next.js</span>
           </div>
         </div>
         <div class="index-card reveal spotlight" data-index="02">
@@ -1350,7 +1390,7 @@ body.is-loading{ overflow: hidden; }
           <div class="tag-list">
             <span class="tag">Python</span><span class="tag">SQL</span><span class="tag">MongoDB</span><span class="tag">Redis</span>
             <span class="tag">FAISS</span><span class="tag">ChromaDB</span><span class="tag">Pinecone</span><span class="tag">AlloyDB</span>
-            <span class="tag">Qdrant</span><span class="tag">Neo4j</span>
+            <span class="tag">Qdrant</span><span class="tag">Neo4j</span><span class="tag">PostgreSQL</span>
           </div>
         </div>
       </div>
@@ -1447,13 +1487,19 @@ body.is-loading{ overflow: hidden; }
     kaggle: "https://kaggle.com/nisargkudgunti",
     githubRepo: "https://github.com/Nisarg6502/Llama-Architecture-From-Scratch",
     huggingface: "https://huggingface.co/spaces/nisarg6502/PII-Redactor-Demo",
-    counterpointRepo: "https://github.com/Nisarg6502/Corporate-Contradiction-Detector"
+    counterpointRepo: "https://github.com/Nisarg6502/Corporate-Contradiction-Detector",
+    paywiseApp: "https://paywise-frontend-177155403272.us-central1.run.app/",
+    paywiseDocs: "https://paywise-backend-177155403272.us-central1.run.app/docs",
+    paywiseRepo: "https://github.com/Nisarg6502/PayWise"
   };
   ["liLink"].forEach(function(id){ var el=document.getElementById(id); if(el) el.href=LINKS.linkedin; });
   ["ghLink2"].forEach(function(id){ var el=document.getElementById(id); if(el) el.href=LINKS.github; });
   ["kgLink"].forEach(function(id){ var el=document.getElementById(id); if(el) el.href=LINKS.kaggle; });
   ["ghLink"].forEach(function(id){ var el=document.getElementById(id); if(el) el.href=LINKS.githubRepo; });
   if(LINKS.counterpointRepo){ ["cpGhLink"].forEach(function(id){ var el=document.getElementById(id); if(el) el.href=LINKS.counterpointRepo; }); }
+  ["pwAppLink"].forEach(function(id){ var el=document.getElementById(id); if(el) el.href=LINKS.paywiseApp; });
+  ["pwDocsLink"].forEach(function(id){ var el=document.getElementById(id); if(el) el.href=LINKS.paywiseDocs; });
+  ["pwGhLink"].forEach(function(id){ var el=document.getElementById(id); if(el) el.href=LINKS.paywiseRepo; });
   ["hfLink","hfLink2"].forEach(function(id){ var el=document.getElementById(id); if(el) el.href=LINKS.huggingface; });
 
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
