@@ -121,3 +121,10 @@ via DOM queries instead of screenshots if it recurs.
   offset, `overflow:hidden`-clipped inactive slide); (3) `setHeight()` never
   recomputed after web fonts swapped in — added a `document.fonts.ready`
   listener alongside the existing resize listener.
+- 2026-07-22: Added Exhibit C: PayWise (LangGraph credit card optimizer,
+  deployed on Cloud Run). Has a live app + API docs, so its `.demo-box` is a
+  link pair (`pwAppLink`, `pwDocsLink`) instead of an interactive demo. Source
+  wired as `pwGhLink`. All three URLs added to `LINKS`
+  (`paywiseApp`/`paywiseDocs`/`paywiseRepo`). Added `Next.js` tag to
+  Frameworks and `PostgreSQL` tag to Data in the skills index; LangGraph,
+  FastAPI, Qdrant, GCP were already covered by existing tags.
